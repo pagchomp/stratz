@@ -1,0 +1,22 @@
+hero id
+week
+rank = mmr
+lane =     {Roaming = 0,SafeLane,MidLane,OffLane,Jungle    }
+role 0 core 1 support
+time = minute (up to minute)
+
+count is amount of matches
+
+apm 935/4
+
+stuns, slows, disabled, hp regen, mp regen all by 100
+
+https://api.stratz.com/api/v1/hero
+
+radiant 1, dire 2
+
+more than 3 supports isnt available
+
+bottom 3 cs bracket is support
+
+ignore imp
