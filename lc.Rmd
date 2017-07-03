@@ -1,30 +1,70 @@
 ---
-title: "lc"
+title: "Jungle Viability"
 author: "Brett Burk"
 date: "July 1, 2017"
 output: html_document
 ---
+```{r load-in, warning = FALSE, message = FALSE, results = 'asis', quietly = TRUE}
+library(httr)
+library(jsonlite)
+library(lubridate)
+library(knitr)
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+folder <- "E:\\Projects\\stratz\\"
+
+options(stringsAsFactors = FALSE)
+stratzAPI <- "https://api.stratz.com/api/v1/hero"
+stratzAPI <- GET(stratzAPI)
+stratzAPI <- rawToChar(stratzAPI$content)
+stratzAPI <- fromJSON(stratzAPI)
+heroNum <- cbind(do.call("rbind", lapply(stratzAPI, "[[", 1)), do.call("rbind", lapply(stratzAPI, "[[", 3)))
+heroNum <- as.data.frame(heroNum)
+# heroNum[,1] <- as.numeric(heroNum[,1])
+
+
+options(stringsAsFactors = TRUE)
+
+# Load In
+
+lc <- read.csv(paste0(folder, "LegionCommander.csv"), stringsAsFactors = FALSE)
+lc.vs <- read.csv(paste0(folder, "LegionVs.csv"), stringsAsFactors = FALSE)
+mlr2 <- read.csv(paste0(folder, "MatchLaneRank2.csv"), stringsAsFactors = FALSE)
+mlr5 <- read.csv(paste0(folder, "MatchLaneRank5.csv"), stringsAsFactors = FALSE)
+mlr8 <- read.csv(paste0(folder, "MatchLaneRank8.csv"), stringsAsFactors = FALSE)
+mr <- read.csv(paste0(folder, "MatchRole.csv"), stringsAsFactors = FALSE)
+
+# Rank is mmr
+
+lc$Lane[lc$Lane == 0] <- "Roaming"
+lc$Lane[lc$Lane == 1] <- "Safe Lane"
+lc$Lane[lc$Lane == 2] <- "Mid"
+lc$Lane[lc$Lane == 3] <- "Offlane"
+lc$Lane[lc$Lane == 4] <- "Jungle"
+
+lc$Role[lc$Role == "0"] <- "Core"
+lc$Role[lc$Role == "1"] <- "Support"
+
+new.df <- data.frame(matrix(ncol = ncol(lc), nrow = 0))
+names(new.df) <- names(lc)
+
+#for(r in 1:nrow(lc)){
+#  temp <- lc[r,]
+#  for(i in 1:temp$Count){
+#    new.df[length(new.df) + 1,] <- row
+#  }
+#}
+
+temp <- c()
+for(r in 1:nrow(lc)){
+  for(c in 1:lc[r,]$Count){
+    temp[length(temp) + 1] <- lc[r,]$Rank
+  }
+}
 ```
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Stun
+StunDuration
+Slow
+SlowDuration
+Disable
+DisableDuration
+HpRegen
