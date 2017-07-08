@@ -9,8 +9,10 @@ library(httr)
 library(jsonlite)
 library(lubridate)
 library(knitr)
+library(dplyr)
 
-folder <- "E:\\Projects\\stratz\\"
+# folder <- "E:\\Projects\\stratz\\"
+folder <- "C:\\Users\\bmburk\\Dropbox\\stratz\\"
 
 options(stringsAsFactors = FALSE)
 stratzAPI <- "https://api.stratz.com/api/v1/hero"
@@ -26,15 +28,14 @@ options(stringsAsFactors = TRUE)
 
 # Load In
 
-lc <- read.csv(paste0(folder, "LegionCommander.csv"), stringsAsFactors = FALSE)
-lc.vs <- read.csv(paste0(folder, "LegionVs.csv"), stringsAsFactors = FALSE)
+
 mlr2 <- read.csv(paste0(folder, "MatchLaneRank2.csv"), stringsAsFactors = FALSE)
 mlr5 <- read.csv(paste0(folder, "MatchLaneRank5.csv"), stringsAsFactors = FALSE)
 mlr8 <- read.csv(paste0(folder, "MatchLaneRank8.csv"), stringsAsFactors = FALSE)
 mr <- read.csv(paste0(folder, "MatchRole.csv"), stringsAsFactors = FALSE)
 
 # Rank is mmr
-
+lc <- read.csv(paste0(folder, "LegionCommander.csv"), stringsAsFactors = FALSE)
 lc$Lane[lc$Lane == 0] <- "Roaming"
 lc$Lane[lc$Lane == 1] <- "Safe Lane"
 lc$Lane[lc$Lane == 2] <- "Mid"
@@ -54,12 +55,12 @@ names(new.df) <- names(lc)
 #  }
 #}
 
-temp <- c()
-for(r in 1:nrow(lc)){
-  for(c in 1:lc[r,]$Count){
-    temp[length(temp) + 1] <- lc[r,]$Rank
-  }
-}
+lc$UniqueID <- cumsum(c(0, as.numeric(lc$Time) == 0))[-1]
+
+lc.vs <- read.csv(paste0(folder, "LegionVs.csv"), stringsAsFactors = FALSE)
+lc.vs[,c(5, 7:ncol(lc.vs))] <- lc.vs[,c(5, 7:ncol(lc.vs))]/lc.vs[,6]
+lc.vs[,5:ncol(lc.vs)] <- round(lc.vs[,5:ncol(lc.vs)], 2)
+lc.vs$VsHeroId <- heroNum$V2[match(lc.vs$VsHeroId, heroNum$V1)]
 ```
 Stun
 StunDuration
