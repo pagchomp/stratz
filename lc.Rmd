@@ -11,24 +11,36 @@ library(lubridate)
 library(knitr)
 library(dplyr)
 
-# folder <- "E:\\Projects\\stratz\\"
-folder <- "C:\\Users\\bmburk\\Dropbox\\stratz\\"
+folder <- "E:\\Projects\\stratz\\"
+# folder <- "C:\\Users\\bmburk\\Dropbox\\stratz\\"
 
 options(stringsAsFactors = FALSE)
-stratzAPI <- "https://api.stratz.com/api/v1/hero"
-stratzAPI <- GET(stratzAPI)
-stratzAPI <- rawToChar(stratzAPI$content)
-stratzAPI <- fromJSON(stratzAPI)
-heroNum <- cbind(do.call("rbind", lapply(stratzAPI, "[[", 1)), do.call("rbind", lapply(stratzAPI, "[[", 3)))
-heroNum <- as.data.frame(heroNum)
-# heroNum[,1] <- as.numeric(heroNum[,1])
+# stratzAPI <- "https://apibeta.stratz.com/api/v1/hero"
+# stratzAPI <- GET(stratzAPI)
+# stratzAPI <- rawToChar(stratzAPI$content)
+# stratzAPI <- fromJSON(stratzAPI)
+# heroNum <- cbind(do.call("rbind", lapply(stratzAPI, "[[", 1)), do.call("rbind", lapply(stratzAPI, "[[", 3)))
+# heroNum <- as.data.frame(heroNum)
+# 
+# heroNum <- heroNum[order(as.numeric(heroNum$V1)),]
+# write.csv(heroNum, paste0(folder, "heroNum.csv"), row.names = F)
+# 
+# heroNum$V3 <- NA
+# for(num in heroNum$V1){
+#   stratzAPI <- paste0("https://apibeta.stratz.com/api/v1/hero/directory?heroId=", num)
+#   stratzAPI <- GET(stratzAPI)
+#   stratzAPI <- rawToChar(stratzAPI$content)
+#   stratzAPI <- fromJSON(stratzAPI)
+#   heroNum[heroNum$V1 == num, 3] <- round(stratzAPI$heroTimeDetail$events[[1]]$wins/stratzAPI$heroTimeDetail$events[[1]]$matchCount, 3)
+# }
+# 
+# write.csv(heroNum, paste0(folder, "heroNum.csv"), row.names = F)
 
+heroNum <- read.csv(paste0(folder, "heroNum.csv"), stringsAsFactors = F)
 
 options(stringsAsFactors = TRUE)
 
 # Load In
-
-
 mlr2 <- read.csv(paste0(folder, "MatchLaneRank2.csv"), stringsAsFactors = FALSE)
 mlr5 <- read.csv(paste0(folder, "MatchLaneRank5.csv"), stringsAsFactors = FALSE)
 mlr8 <- read.csv(paste0(folder, "MatchLaneRank8.csv"), stringsAsFactors = FALSE)
@@ -48,13 +60,6 @@ lc$Role[lc$Role == "1"] <- "Support"
 new.df <- data.frame(matrix(ncol = ncol(lc), nrow = 0))
 names(new.df) <- names(lc)
 
-#for(r in 1:nrow(lc)){
-#  temp <- lc[r,]
-#  for(i in 1:temp$Count){
-#    new.df[length(new.df) + 1,] <- row
-#  }
-#}
-
 lc$UniqueID <- cumsum(c(0, as.numeric(lc$Time) == 0))[-1]
 
 lc.vs <- read.csv(paste0(folder, "LegionVs.csv"), stringsAsFactors = FALSE)
@@ -62,6 +67,7 @@ lc.vs[,c(5, 7:ncol(lc.vs))] <- lc.vs[,c(5, 7:ncol(lc.vs))]/lc.vs[,6]
 lc.vs[,5:ncol(lc.vs)] <- round(lc.vs[,5:ncol(lc.vs)], 2)
 lc.vs$VsHeroId <- heroNum$V2[match(lc.vs$VsHeroId, heroNum$V1)]
 ```
+
 Stun
 StunDuration
 Slow
@@ -69,3 +75,45 @@ SlowDuration
 Disable
 DisableDuration
 HpRegen
+
+first.ten <- lc[lc$Time <= 10,]
+
+```{r}
+round(aggregate(lc.vs$Wins, by = list(lc.vs$Rank), summary), 3)
+round(aggregate(lc.vs$Wins, by = list(lc.vs$Rank), sd), 3)
+
+sd.rank.df <- data.frame(rank = 0:9,  
+           lower = round(aggregate(lc.vs$Wins, by = list(lc.vs$Rank), mean), 3)[,2] - 2 * round(aggregate(lc.vs$Wins, by = list(lc.vs$Rank), sd), 3)[,2],
+           upper = round(aggregate(lc.vs$Wins, by = list(lc.vs$Rank), mean), 3)[,2] + 2 * round(aggregate(lc.vs$Wins, by = list(lc.vs$Rank), sd), 3)[,2])
+
+for(i in 1:nrow(lc.vs)){
+  curr.row <- lc.vs[i,]
+  curr.sd <- sd.rank.df[sd.rank.df$rank == curr.row$Rank,]
+  if((curr.row$Wins >= curr.sd$upper|curr.row$Wins <= curr.sd$lower) & curr.row$Count >= 5){
+    print(paste(curr.row$VsHeroId, "rank:", curr.row$Rank, "count:", curr.row$Count, "Wins:", curr.row$Wins))
+  }
+}
+```
+
+
+```{r}
+
+```
+Check heroes vs normal winrates
+
+good matchups? especially bad matchups?
+
+team comps where she is good?
+team comps where especially bad?
+
+Why is she bad at jungle?
++Team networth at 10
++Hero damage
+++At ten?
+++Overall
++Game lengths long/short?
++Too much physical damage?
++Magical Damage?
+
+Are all jungle heroes bad?
++Can they be offset (stacking?)
