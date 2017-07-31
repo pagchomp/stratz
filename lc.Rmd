@@ -79,22 +79,34 @@ HpRegen
 first.ten <- lc[lc$Time <= 10,]
 
 ```{r}
-round(aggregate(lc.vs$Wins, by = list(lc.vs$Rank), summary), 3)
-round(aggregate(lc.vs$Wins, by = list(lc.vs$Rank), sd), 3)
+# round(aggregate(lc.vs$Wins, by = list(lc.vs$Rank), summary), 3)
+# round(aggregate(lc.vs$Wins, by = list(lc.vs$Rank), sd), 3)
 
 sd.rank.df <- data.frame(rank = 0:9,  
            lower = round(aggregate(lc.vs$Wins, by = list(lc.vs$Rank), mean), 3)[,2] - 2 * round(aggregate(lc.vs$Wins, by = list(lc.vs$Rank), sd), 3)[,2],
            upper = round(aggregate(lc.vs$Wins, by = list(lc.vs$Rank), mean), 3)[,2] + 2 * round(aggregate(lc.vs$Wins, by = list(lc.vs$Rank), sd), 3)[,2])
 
+good.df <- data.frame(hero = character(), winrate = 
+
 for(i in 1:nrow(lc.vs)){
   curr.row <- lc.vs[i,]
   curr.sd <- sd.rank.df[sd.rank.df$rank == curr.row$Rank,]
-  if((curr.row$Wins >= curr.sd$upper|curr.row$Wins <= curr.sd$lower) & curr.row$Count >= 5){
-    print(paste(curr.row$VsHeroId, "rank:", curr.row$Rank, "count:", curr.row$Count, "Wins:", curr.row$Wins))
+  # if((curr.row$Wins >= curr.sd$upper|curr.row$Wins <= curr.sd$lower) & curr.row$Count >= 5){
+  #   print(paste(curr.row$VsHeroId, "rank:", curr.row$Rank, "count:", curr.row$Count, "Wins:", curr.row$Wins))
+  # }
+  if(curr.row$Count >= 20){
+    if(curr.row$Wins >= curr.sd$upper){
+      print(paste(i, "Especially good vs", curr.row$VsHeroId, "rank:", curr.row$Rank, "Count:", curr.row$Count, "Wins:", curr.row$Wins, "Upper:", curr.sd$upper))
+    }
+    if(curr.row$Wins <= curr.sd$lower){
+      print(paste(i, "Especially bad vs", curr.row$VsHeroId, "rank:", curr.row$Rank, "Count:", curr.row$Count, "Wins:", curr.row$Wins, "Lower:", curr.sd$upper))
+    }
   }
 }
 ```
 
+HeroId
+heroNum
 
 ```{r}
 
